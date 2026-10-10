@@ -506,14 +506,74 @@
     Array.prototype.forEach.call(files, function (file) {
       if (!file.type.startsWith('image/')) return;
       pendingImages.push(file);
-      var idx = pendingImages.length;
+    });
+    renderUploadPreview();
+  }
+
+  function renderUploadPreview() {
+    var preview = $('uploadPreview');
+    if (!preview) return;
+    preview.innerHTML = '';
+
+    if (!pendingImages.length) return;
+
+    // Drag hint
+    var hint = document.createElement('div');
+    hint.className = 'upload-reorder-hint';
+    hint.textContent = '🖐️ Drag to reorder · First image is the cover';
+    preview.appendChild(hint);
+
+    pendingImages.forEach(function (file, idx) {
       var reader = new FileReader();
-      reader.onload = function (e) {
-        var div = document.createElement('div');
-        div.className = 'upload-prev-item';
-        div.innerHTML = '<span class="prev-index">' + idx + '</span><img src="' + e.target.result + '">';
-        preview.appendChild(div);
-      };
+      reader.onload = (function (i, f) {
+        return function (e) {
+          var div = document.createElement('div');
+          div.className = 'upload-prev-item';
+          div.draggable = true;
+          div.dataset.idx = i;
+          div.innerHTML =
+            '<span class="prev-index">' + (i + 1) + '</span>' +
+            '<img src="' + e.target.result + '" draggable="false">' +
+            '<button type="button" class="upload-prev-remove" data-idx="' + i + '" aria-label="Remove">×</button>';
+          preview.appendChild(div);
+
+          // Bind remove
+          var rm = div.querySelector('.upload-prev-remove');
+          if (rm) rm.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            var idx = parseInt(rm.getAttribute('data-idx'), 10);
+            pendingImages.splice(idx, 1);
+            renderUploadPreview();
+          });
+
+          // Bind drag
+          div.addEventListener('dragstart', function (ev) {
+            ev.dataTransfer.setData('text/plain', i);
+            div.classList.add('dragging');
+          });
+          div.addEventListener('dragend', function () {
+            div.classList.remove('dragging');
+          });
+          div.addEventListener('dragover', function (ev) {
+            ev.preventDefault();
+            div.classList.add('drag-over');
+          });
+          div.addEventListener('dragleave', function () {
+            div.classList.remove('drag-over');
+          });
+          div.addEventListener('drop', function (ev) {
+            ev.preventDefault();
+            div.classList.remove('drag-over');
+            var from = parseInt(ev.dataTransfer.getData('text/plain'), 10);
+            var to = i;
+            if (isNaN(from) || from === to) return;
+            var moved = pendingImages.splice(from, 1)[0];
+            pendingImages.splice(to, 0, moved);
+            renderUploadPreview();
+          });
+        };
+      })(idx, file);
       reader.readAsDataURL(file);
     });
   }
