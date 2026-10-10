@@ -1173,3 +1173,67 @@
     margin-right:8px;
   }
 }
+/* ============================================================
+   UPLOAD PREVIEW — DRAG REORDER
+   ============================================================ */
+.upload-reorder-hint {
+  grid-column: 1 / -1;
+  font-size: .76rem;
+  color: #64748b;
+  font-weight: 600;
+  padding: 4px 0 8px;
+  text-align: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.upload-prev-item {
+  cursor: grab;
+  position: relative;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.upload-prev-item:active {
+  cursor: grabbing;
+}
+
+.upload-prev-item.dragging {
+  opacity: .35;
+  transform: scale(.92);
+}
+
+.upload-prev-item.drag-over {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px #2563eb;
+  border-radius: 9px;
+}
+
+.upload-prev-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, .92);
+  color: #fff;
+  border: 0;
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: .15s;
+  opacity: 0;
+}
+
+.upload-prev-item:hover .upload-prev-remove {
+  opacity: 1;
+}
+
+.upload-prev-remove:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
